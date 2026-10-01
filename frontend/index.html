@@ -1,0 +1,2165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>AWS Cloud Image Compressor</title>
+
+<style>
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    min-height: 100vh;
+    color: white;
+
+    background:
+        radial-gradient(circle at 10% 10%, #243b6b, transparent 30%),
+        radial-gradient(circle at 90% 90%, #123c4d, transparent 30%),
+        #07111f;
+
+    padding: 30px 15px;
+}
+
+.container {
+    max-width: 1150px;
+    margin: auto;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.logo {
+    width: 72px;
+    height: 72px;
+    margin: auto;
+
+    border-radius: 20px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    font-size: 34px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #4f8cff,
+            #8b5cf6
+        );
+
+    box-shadow:
+        0 15px 40px
+        rgba(79,140,255,.3);
+}
+
+.header h1 {
+    margin-top: 18px;
+    font-size: 38px;
+}
+
+.header p {
+    margin-top: 10px;
+    color: #9eafc6;
+}
+
+.main-card {
+    background: rgba(16,28,47,.92);
+
+    border: 1px solid
+        rgba(255,255,255,.08);
+
+    border-radius: 24px;
+
+    padding: 28px;
+
+    box-shadow:
+        0 25px 70px
+        rgba(0,0,0,.35);
+}
+
+.upload-area {
+    border: 2px dashed #45638c;
+
+    border-radius: 20px;
+
+    padding: 45px 20px;
+
+    text-align: center;
+
+    cursor: pointer;
+
+    transition: .3s;
+}
+
+.upload-area:hover,
+.upload-area.dragover {
+    border-color: #5b9cff;
+
+    background:
+        rgba(91,156,255,.07);
+}
+
+.upload-icon {
+    font-size: 50px;
+    margin-bottom: 15px;
+}
+
+.upload-area h2 {
+    margin-bottom: 8px;
+}
+
+.upload-area p {
+    color: #94a7c0;
+}
+
+.choose-btn {
+    margin-top: 20px;
+
+    padding: 13px 25px;
+
+    border: none;
+
+    border-radius: 12px;
+
+    color: white;
+
+    background:
+        linear-gradient(
+            135deg,
+            #4f8cff,
+            #7357ff
+        );
+
+    font-weight: bold;
+
+    cursor: pointer;
+}
+
+#fileInput {
+    display: none;
+}
+
+.selected-file {
+    display: none;
+
+    margin-top: 20px;
+
+    padding: 16px;
+
+    border-radius: 14px;
+
+    background:
+        rgba(255,255,255,.05);
+}
+
+.selected-file.active {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+}
+
+.file-name {
+    font-weight: bold;
+    word-break: break-all;
+}
+
+.file-info {
+    color: #91a4bd;
+
+    font-size: 13px;
+
+    margin-top: 5px;
+}
+
+.upload-button {
+    width: 100%;
+
+    margin-top: 20px;
+
+    padding: 15px;
+
+    border: none;
+
+    border-radius: 13px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #16a085,
+            #2196f3
+        );
+
+    color: white;
+
+    font-size: 16px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+}
+
+.upload-button:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+}
+
+.progress-section {
+    display: none;
+    margin-top: 22px;
+}
+
+.progress-section.active {
+    display: block;
+}
+
+.progress-info {
+    display: flex;
+
+    justify-content: space-between;
+
+    color: #aebbd0;
+
+    font-size: 13px;
+
+    margin-bottom: 8px;
+}
+
+.progress-bar {
+    height: 9px;
+
+    border-radius: 20px;
+
+    overflow: hidden;
+
+    background: #1c2a40;
+}
+
+.progress-fill {
+    width: 0%;
+
+    height: 100%;
+
+    border-radius: 20px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #4f8cff,
+            #8b5cf6
+        );
+
+    transition: width .3s;
+}
+
+.status {
+    display: none;
+
+    margin-top: 20px;
+
+    padding: 14px;
+
+    border-radius: 12px;
+
+    font-size: 14px;
+}
+
+.status.show {
+    display: block;
+}
+
+.status.loading {
+    color: #8dbaff;
+
+    background:
+        rgba(59,130,246,.12);
+}
+
+.status.success {
+    color: #65e394;
+
+    background:
+        rgba(34,197,94,.12);
+}
+
+.status.error {
+    color: #ff8585;
+
+    background:
+        rgba(239,68,68,.12);
+}
+
+.original-info {
+    display: none;
+
+    margin-top: 25px;
+
+    padding: 18px;
+
+    border-radius: 15px;
+
+    background:
+        rgba(255,255,255,.04);
+}
+
+.original-info.show {
+    display: block;
+}
+
+.original-info h3 {
+    margin-bottom: 12px;
+}
+
+.original-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3,1fr);
+
+    gap: 10px;
+}
+
+.results {
+    display: none;
+
+    margin-top: 35px;
+}
+
+.results.show {
+    display: block;
+}
+
+.results-title {
+    text-align: center;
+
+    margin-bottom: 22px;
+}
+
+.results-title h2 {
+    font-size: 26px;
+}
+
+.results-title p {
+    color: #9caec7;
+
+    margin-top: 7px;
+}
+
+.cards {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3,1fr);
+
+    gap: 18px;
+}
+
+.result-card {
+    overflow: hidden;
+
+    border-radius: 18px;
+
+    background:
+        rgba(255,255,255,.045);
+
+    border: 1px solid
+        rgba(255,255,255,.08);
+
+    transition: .3s;
+}
+
+.result-card:hover {
+    transform: translateY(-5px);
+
+    border-color:
+        rgba(91,156,255,.4);
+}
+
+.image-container {
+    height: 240px;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    background: #050c17;
+
+    overflow: hidden;
+}
+
+.image-container img {
+    max-width: 100%;
+
+    max-height: 100%;
+
+    width: auto;
+
+    height: auto;
+}
+
+.card-content {
+    padding: 18px;
+}
+
+.badge {
+    display: inline-block;
+
+    padding: 6px 10px;
+
+    border-radius: 20px;
+
+    background:
+        rgba(79,140,255,.12);
+
+    color: #83b2ff;
+
+    font-size: 11px;
+
+    font-weight: bold;
+
+    margin-bottom: 10px;
+}
+
+.card-content h3 {
+    font-size: 20px;
+
+    margin-bottom: 13px;
+}
+
+.stats {
+    display: grid;
+
+    grid-template-columns:
+        1fr 1fr;
+
+    gap: 8px;
+}
+
+.stat {
+    padding: 10px;
+
+    border-radius: 9px;
+
+    background:
+        rgba(255,255,255,.035);
+}
+
+.stat-label {
+    display: block;
+
+    color: #8395ad;
+
+    font-size: 10px;
+
+    text-transform: uppercase;
+
+    margin-bottom: 4px;
+}
+
+.stat-value {
+    font-size: 13px;
+
+    font-weight: bold;
+}
+
+.compression {
+    margin-top: 12px;
+
+    padding: 10px;
+
+    text-align: center;
+
+    border-radius: 9px;
+
+    background:
+        rgba(34,197,94,.08);
+
+    color: #65e394;
+
+    font-size: 13px;
+
+    font-weight: bold;
+}
+
+.view-btn,
+.download-btn {
+    display: block;
+
+    margin-top: 12px;
+
+    padding: 10px;
+
+    text-align: center;
+
+    border-radius: 9px;
+
+    text-decoration: none;
+
+    font-size: 13px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+}
+
+.view-btn {
+    background:
+        rgba(79,140,255,.12);
+
+    color: #8dbaff;
+}
+
+.view-btn:hover {
+    background:
+        rgba(79,140,255,.22);
+}
+
+.download-btn {
+    background:
+        rgba(34,197,94,.12);
+
+    color: #65e394;
+}
+
+.download-btn:hover {
+    background:
+        rgba(34,197,94,.22);
+}
+
+.footer {
+    text-align: center;
+
+    margin-top: 25px;
+
+    color: #6f819a;
+
+    font-size: 12px;
+}
+
+@media(max-width:850px) {
+
+    .cards {
+        grid-template-columns: 1fr;
+    }
+
+    .original-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media(max-width:550px) {
+
+    .main-card {
+        padding: 17px;
+    }
+
+    .header h1 {
+        font-size: 29px;
+    }
+
+    .selected-file.active {
+        flex-direction: column;
+
+        align-items: flex-start;
+    }
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+    <div class="header">
+
+        <div class="logo">
+            🖼️
+        </div>
+
+        <h1>
+            AWS Cloud Image Compressor
+        </h1>
+
+        <p>
+            Compress images without changing
+            their original dimensions
+        </p>
+
+    </div>
+
+
+    <div class="main-card">
+
+
+        <!-- UPLOAD -->
+
+        <div
+            class="upload-area"
+            id="uploadArea"
+        >
+
+            <div class="upload-icon">
+                ☁️
+            </div>
+
+            <h2>
+                Upload Your Image
+            </h2>
+
+            <p>
+                Drag & drop an image or choose a file
+            </p>
+
+            <button
+                class="choose-btn"
+                type="button"
+            >
+                Choose Image
+            </button>
+
+            <input
+                type="file"
+                id="fileInput"
+                accept="image/jpeg,image/png,image/webp"
+            >
+
+        </div>
+
+
+        <!-- SELECTED FILE -->
+
+        <div
+            class="selected-file"
+            id="selectedFile"
+        >
+
+            <div>
+
+                <div
+                    class="file-name"
+                    id="fileName"
+                >
+                    -
+                </div>
+
+                <div
+                    class="file-info"
+                    id="fileInfo"
+                >
+                    -
+                </div>
+
+            </div>
+
+            <div>
+                📷
+            </div>
+
+        </div>
+
+
+        <button
+            class="upload-button"
+            id="uploadButton"
+            disabled
+        >
+            🚀 Compress Image
+        </button>
+
+
+        <!-- PROGRESS -->
+
+        <div
+            class="progress-section"
+            id="progressSection"
+        >
+
+            <div class="progress-info">
+
+                <span id="progressText">
+                    Preparing...
+                </span>
+
+                <span id="progressPercent">
+                    0%
+                </span>
+
+            </div>
+
+            <div class="progress-bar">
+
+                <div
+                    class="progress-fill"
+                    id="progressFill"
+                ></div>
+
+            </div>
+
+        </div>
+
+
+        <!-- STATUS -->
+
+        <div
+            class="status"
+            id="status"
+        ></div>
+
+
+        <!-- ORIGINAL -->
+
+        <div
+            class="original-info"
+            id="originalInfo"
+        >
+
+            <h3>
+                📊 Original Image
+            </h3>
+
+            <div class="original-grid">
+
+
+                <div class="stat">
+
+                    <span class="stat-label">
+                        Dimensions
+                    </span>
+
+                    <span
+                        class="stat-value"
+                        id="originalDimensions"
+                    >
+                        -
+                    </span>
+
+                </div>
+
+
+                <div class="stat">
+
+                    <span class="stat-label">
+                        File Size
+                    </span>
+
+                    <span
+                        class="stat-value"
+                        id="originalSize"
+                    >
+                        -
+                    </span>
+
+                </div>
+
+
+                <div class="stat">
+
+                    <span class="stat-label">
+                        Format
+                    </span>
+
+                    <span
+                        class="stat-value"
+                        id="originalFormat"
+                    >
+                        -
+                    </span>
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+
+        <!-- RESULTS -->
+
+        <div
+            class="results"
+            id="results"
+        >
+
+            <div class="results-title">
+
+                <h2>
+                    ✨ Compressed Images
+                </h2>
+
+                <p>
+                    Original dimensions are preserved
+                </p>
+
+            </div>
+
+
+            <div class="cards">
+
+
+                <!-- SMALL -->
+
+                <div class="result-card">
+
+                    <div class="image-container">
+
+                        <img
+                            id="smallImage"
+                            alt="Small compressed image"
+                        >
+
+                    </div>
+
+                    <div class="card-content">
+
+                        <span class="badge">
+                            Quality 50
+                        </span>
+
+                        <h3>
+                            Small
+                        </h3>
+
+                        <div class="stats">
+
+
+                            <div class="stat">
+
+                                <span class="stat-label">
+                                    Dimensions
+                                </span>
+
+                                <span
+                                    class="stat-value"
+                                    id="smallDimensions"
+                                >
+                                    -
+                                </span>
+
+                            </div>
+
+
+                            <div class="stat">
+
+                                <span class="stat-label">
+                                    File Size
+                                </span>
+
+                                <span
+                                    class="stat-value"
+                                    id="smallSize"
+                                >
+                                    -
+                                </span>
+
+                            </div>
+
+
+                        </div>
+
+
+                        <div
+                            class="compression"
+                            id="smallCompression"
+                        >
+                            -
+                        </div>
+
+
+                        <a
+                            id="smallView"
+                            class="view-btn"
+                            target="_blank"
+                        >
+                            🔗 View Image
+                        </a>
+
+
+                        <a
+                            id="smallDownload"
+                            class="download-btn"
+                        >
+                            ⬇️ Download Small
+                        </a>
+
+
+                    </div>
+
+                </div>
+
+
+                <!-- MEDIUM -->
+
+                <div class="result-card">
+
+                    <div class="image-container">
+
+                        <img
+                            id="mediumImage"
+                            alt="Medium compressed image"
+                        >
+
+                    </div>
+
+                    <div class="card-content">
+
+                        <span class="badge">
+                            Quality 70
+                        </span>
+
+                        <h3>
+                            Medium
+                        </h3>
+
+                        <div class="stats">
+
+
+                            <div class="stat">
+
+                                <span class="stat-label">
+                                    Dimensions
+                                </span>
+
+                                <span
+                                    class="stat-value"
+                                    id="mediumDimensions"
+                                >
+                                    -
+                                </span>
+
+                            </div>
+
+
+                            <div class="stat">
+
+                                <span class="stat-label">
+                                    File Size
+                                </span>
+
+                                <span
+                                    class="stat-value"
+                                    id="mediumSize"
+                                >
+                                    -
+                                </span>
+
+                            </div>
+
+
+                        </div>
+
+
+                        <div
+                            class="compression"
+                            id="mediumCompression"
+                        >
+                            -
+                        </div>
+
+
+                        <a
+                            id="mediumView"
+                            class="view-btn"
+                            target="_blank"
+                        >
+                            🔗 View Image
+                        </a>
+
+
+                        <a
+                            id="mediumDownload"
+                            class="download-btn"
+                        >
+                            ⬇️ Download Medium
+                        </a>
+
+
+                    </div>
+
+                </div>
+
+
+                <!-- LARGE -->
+
+                <div class="result-card">
+
+                    <div class="image-container">
+
+                        <img
+                            id="largeImage"
+                            alt="Large compressed image"
+                        >
+
+                    </div>
+
+                    <div class="card-content">
+
+                        <span class="badge">
+                            Quality 85
+                        </span>
+
+                        <h3>
+                            Large
+                        </h3>
+
+                        <div class="stats">
+
+
+                            <div class="stat">
+
+                                <span class="stat-label">
+                                    Dimensions
+                                </span>
+
+                                <span
+                                    class="stat-value"
+                                    id="largeDimensions"
+                                >
+                                    -
+                                </span>
+
+                            </div>
+
+
+                            <div class="stat">
+
+                                <span class="stat-label">
+                                    File Size
+                                </span>
+
+                                <span
+                                    class="stat-value"
+                                    id="largeSize"
+                                >
+                                    -
+                                </span>
+
+                            </div>
+
+
+                        </div>
+
+
+                        <div
+                            class="compression"
+                            id="largeCompression"
+                        >
+                            -
+                        </div>
+
+
+                        <a
+                            id="largeView"
+                            class="view-btn"
+                            target="_blank"
+                        >
+                            🔗 View Image
+                        </a>
+
+
+                        <a
+                            id="largeDownload"
+                            class="download-btn"
+                        >
+                            ⬇️ Download Large
+                        </a>
+
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="footer">
+
+        Amazon S3 • AWS Lambda • IAM • CloudWatch
+
+    </div>
+
+
+</div>
+
+
+<script>
+
+
+/* =====================================================
+   YOUR LAMBDA FUNCTION URL
+===================================================== */
+
+const LAMBDA_FUNCTION_URL =
+"https://eojksoh2ceugelsuoa4dzy3rim0wpgbv.lambda-url.ap-south-1.on.aws/";
+
+
+/* =====================================================
+   ELEMENTS
+===================================================== */
+
+const uploadArea =
+document.getElementById("uploadArea");
+
+const fileInput =
+document.getElementById("fileInput");
+
+const chooseButton =
+document.querySelector(".choose-btn");
+
+const selectedFile =
+document.getElementById("selectedFile");
+
+const fileName =
+document.getElementById("fileName");
+
+const fileInfo =
+document.getElementById("fileInfo");
+
+const uploadButton =
+document.getElementById("uploadButton");
+
+const status =
+document.getElementById("status");
+
+const progressSection =
+document.getElementById("progressSection");
+
+const progressFill =
+document.getElementById("progressFill");
+
+const progressText =
+document.getElementById("progressText");
+
+const progressPercent =
+document.getElementById("progressPercent");
+
+const results =
+document.getElementById("results");
+
+
+let selectedImage = null;
+
+
+/* =====================================================
+   CHOOSE FILE
+===================================================== */
+
+chooseButton.addEventListener(
+    "click",
+    function(event) {
+
+        event.stopPropagation();
+
+        fileInput.click();
+
+    }
+);
+
+
+uploadArea.addEventListener(
+    "click",
+    function(event) {
+
+        if (
+            event.target !== chooseButton
+        ) {
+
+            fileInput.click();
+
+        }
+
+    }
+);
+
+
+fileInput.addEventListener(
+    "change",
+    function() {
+
+        if (
+            fileInput.files.length > 0
+        ) {
+
+            handleFile(
+                fileInput.files[0]
+            );
+
+        }
+
+    }
+);
+
+
+/* =====================================================
+   DRAG & DROP
+===================================================== */
+
+uploadArea.addEventListener(
+    "dragover",
+    function(event) {
+
+        event.preventDefault();
+
+        uploadArea.classList.add(
+            "dragover"
+        );
+
+    }
+);
+
+
+uploadArea.addEventListener(
+    "dragleave",
+    function() {
+
+        uploadArea.classList.remove(
+            "dragover"
+        );
+
+    }
+);
+
+
+uploadArea.addEventListener(
+    "drop",
+    function(event) {
+
+        event.preventDefault();
+
+        uploadArea.classList.remove(
+            "dragover"
+        );
+
+
+        if (
+            event.dataTransfer.files.length > 0
+        ) {
+
+            handleFile(
+                event.dataTransfer.files[0]
+            );
+
+        }
+
+    }
+);
+
+
+/* =====================================================
+   HANDLE FILE
+===================================================== */
+
+function handleFile(file) {
+
+
+    if (
+        !file.type.startsWith("image/")
+    ) {
+
+        showStatus(
+            "Please select an image file.",
+            "error"
+        );
+
+        return;
+
+    }
+
+
+    selectedImage = file;
+
+
+    fileName.textContent =
+        file.name;
+
+
+    fileInfo.textContent =
+        `${file.type} • ${formatBytes(file.size)}`;
+
+
+    selectedFile.classList.add(
+        "active"
+    );
+
+
+    uploadButton.disabled =
+        false;
+
+
+    results.classList.remove(
+        "show"
+    );
+
+
+    /* Original dimensions */
+
+    const image =
+        new Image();
+
+
+    image.onload =
+        function() {
+
+            document.getElementById(
+                "originalDimensions"
+            ).textContent =
+                `${image.naturalWidth} × ${image.naturalHeight}`;
+
+
+            URL.revokeObjectURL(
+                image.src
+            );
+
+        };
+
+
+    image.src =
+        URL.createObjectURL(file);
+
+
+    document.getElementById(
+        "originalSize"
+    ).textContent =
+        formatBytes(file.size);
+
+
+    document.getElementById(
+        "originalFormat"
+    ).textContent =
+        file.type
+            .split("/")
+            .pop()
+            .toUpperCase();
+
+
+    document.getElementById(
+        "originalInfo"
+    ).classList.add(
+        "show"
+    );
+
+}
+
+
+/* =====================================================
+   MAIN UPLOAD
+===================================================== */
+
+uploadButton.addEventListener(
+    "click",
+    async function() {
+
+
+        if (!selectedImage) {
+            return;
+        }
+
+
+        uploadButton.disabled =
+            true;
+
+
+        results.classList.remove(
+            "show"
+        );
+
+
+        progressSection.classList.add(
+            "active"
+        );
+
+
+        try {
+
+
+            /* =========================================
+               STEP 1
+               GET PRESIGNED UPLOAD URL
+            ========================================== */
+
+            setProgress(
+                5,
+                "Creating secure upload URL..."
+            );
+
+
+            const uploadApi =
+                LAMBDA_FUNCTION_URL +
+                "?action=upload" +
+                "&fileName=" +
+                encodeURIComponent(
+                    selectedImage.name
+                ) +
+                "&contentType=" +
+                encodeURIComponent(
+                    selectedImage.type
+                );
+
+
+            const uploadResponse =
+                await fetch(
+                    uploadApi
+                );
+
+
+            if (!uploadResponse.ok) {
+
+                throw new Error(
+                    "Upload URL error: " +
+                    await uploadResponse.text()
+                );
+
+            }
+
+
+            const uploadData =
+                await uploadResponse.json();
+
+
+            const uploadUrl =
+                uploadData.uploadUrl;
+
+
+            const objectKey =
+                uploadData.key;
+
+
+            /* =========================================
+               STEP 2
+               UPLOAD ORIGINAL TO S3
+            ========================================== */
+
+            setProgress(
+                20,
+                "Uploading image to Amazon S3..."
+            );
+
+
+            const s3Response =
+                await fetch(
+                    uploadUrl,
+                    {
+
+                        method: "PUT",
+
+                        headers: {
+
+                            "Content-Type":
+                                selectedImage.type
+
+                        },
+
+                        body:
+                            selectedImage
+
+                    }
+                );
+
+
+            if (!s3Response.ok) {
+
+                throw new Error(
+                    "S3 upload failed: HTTP " +
+                    s3Response.status
+                );
+
+            }
+
+
+            /* =========================================
+               STEP 3
+            ========================================== */
+
+            setProgress(
+                40,
+                "AWS Lambda is compressing the image..."
+            );
+
+
+            showStatus(
+                "Image uploaded. Lambda is processing it...",
+                "loading"
+            );
+
+
+            const filename =
+                objectKey
+                    .split("/")
+                    .pop();
+
+
+            /* =========================================
+               STEP 4 - SMALL
+            ========================================== */
+
+            const smallKey =
+                "resized/small/" +
+                filename;
+
+
+            const smallUrl =
+                await waitForCompressedImage(
+                    smallKey,
+                    40
+                );
+
+
+            setProgress(
+                60,
+                "Small compression completed..."
+            );
+
+
+            /* =========================================
+               STEP 5 - MEDIUM
+            ========================================== */
+
+            const mediumKey =
+                "resized/medium/" +
+                filename;
+
+
+            const mediumUrl =
+                await waitForCompressedImage(
+                    mediumKey,
+                    40
+                );
+
+
+            setProgress(
+                75,
+                "Medium compression completed..."
+            );
+
+
+            /* =========================================
+               STEP 6 - LARGE
+            ========================================== */
+
+            const largeKey =
+                "resized/large/" +
+                filename;
+
+
+            const largeUrl =
+                await waitForCompressedImage(
+                    largeKey,
+                    40
+                );
+
+
+            setProgress(
+                90,
+                "Large compression completed..."
+            );
+
+
+            /* =========================================
+               STEP 7 - DISPLAY
+            ========================================== */
+
+            await displayResult(
+                "small",
+                smallUrl,
+                selectedImage.size,
+                smallKey
+            );
+
+
+            await displayResult(
+                "medium",
+                mediumUrl,
+                selectedImage.size,
+                mediumKey
+            );
+
+
+            await displayResult(
+                "large",
+                largeUrl,
+                selectedImage.size,
+                largeKey
+            );
+
+
+            results.classList.add(
+                "show"
+            );
+
+
+            setProgress(
+                100,
+                "Compression completed!"
+            );
+
+
+            showStatus(
+                "✅ Image compressed successfully!",
+                "success"
+            );
+
+
+        }
+        catch(error) {
+
+
+            console.error(
+                "Compression error:",
+                error
+            );
+
+
+            showStatus(
+                "❌ " + error.message,
+                "error"
+            );
+
+
+            setProgress(
+                0,
+                "Processing failed"
+            );
+
+
+        }
+        finally {
+
+            uploadButton.disabled =
+                false;
+
+        }
+
+    }
+);
+
+
+/* =====================================================
+   GET VIEW URL
+===================================================== */
+
+async function getViewUrl(key) {
+
+
+    const apiUrl =
+        LAMBDA_FUNCTION_URL +
+        "?action=view" +
+        "&key=" +
+        encodeURIComponent(key);
+
+
+    const response =
+        await fetch(
+            apiUrl
+        );
+
+
+    if (!response.ok) {
+
+        throw new Error(
+            "View URL error: HTTP " +
+            response.status
+        );
+
+    }
+
+
+    const data =
+        await response.json();
+
+
+    if (!data.viewUrl) {
+
+        throw new Error(
+            "Lambda did not return a view URL."
+        );
+
+    }
+
+
+    return data.viewUrl;
+
+}
+
+
+/* =====================================================
+   GET DOWNLOAD URL
+===================================================== */
+
+async function getDownloadUrl(key) {
+
+
+    const apiUrl =
+        LAMBDA_FUNCTION_URL +
+        "?action=view" +
+        "&download=true" +
+        "&key=" +
+        encodeURIComponent(key);
+
+
+    const response =
+        await fetch(
+            apiUrl
+        );
+
+
+    if (!response.ok) {
+
+        throw new Error(
+            "Download URL error: HTTP " +
+            response.status
+        );
+
+    }
+
+
+    const data =
+        await response.json();
+
+
+    if (!data.viewUrl) {
+
+        throw new Error(
+            "Lambda did not return download URL."
+        );
+
+    }
+
+
+    return data.viewUrl;
+
+}
+
+
+/* =====================================================
+   WAIT FOR COMPRESSED IMAGE
+===================================================== */
+
+async function waitForCompressedImage(
+    key,
+    maxAttempts
+) {
+
+
+    for (
+        let attempt = 1;
+        attempt <= maxAttempts;
+        attempt++
+    ) {
+
+
+        try {
+
+
+            const url =
+                await getViewUrl(key);
+
+
+            const exists =
+                await checkImage(url);
+
+
+            if (exists) {
+
+                return url;
+
+            }
+
+
+        }
+        catch(error) {
+
+            console.log(
+                "Waiting for:",
+                key,
+                "Attempt:",
+                attempt
+            );
+
+        }
+
+
+        await sleep(1500);
+
+    }
+
+
+    throw new Error(
+        "Compressed image was not found: " +
+        key
+    );
+
+}
+
+
+/* =====================================================
+   CHECK IMAGE
+===================================================== */
+
+function checkImage(url) {
+
+
+    return new Promise(
+        function(resolve) {
+
+
+            const image =
+                new Image();
+
+
+            image.onload =
+                function() {
+
+                    resolve(true);
+
+                };
+
+
+            image.onerror =
+                function() {
+
+                    resolve(false);
+
+                };
+
+
+            /*
+               IMPORTANT:
+               DO NOT MODIFY PRESIGNED URL
+            */
+
+            image.src =
+                url;
+
+        }
+    );
+
+}
+
+
+/* =====================================================
+   DISPLAY RESULT
+===================================================== */
+
+async function displayResult(
+    type,
+    url,
+    originalSize,
+    key
+) {
+
+
+    const image =
+        document.getElementById(
+            type + "Image"
+        );
+
+
+    const dimensions =
+        document.getElementById(
+            type + "Dimensions"
+        );
+
+
+    const size =
+        document.getElementById(
+            type + "Size"
+        );
+
+
+    const compression =
+        document.getElementById(
+            type + "Compression"
+        );
+
+
+    const view =
+        document.getElementById(
+            type + "View"
+        );
+
+
+    const download =
+        document.getElementById(
+            type + "Download"
+        );
+
+
+    /* Image */
+
+    image.src =
+        url;
+
+
+    /* View */
+
+    view.href =
+        url;
+
+
+    /* Download */
+
+    const downloadUrl =
+        await getDownloadUrl(key);
+
+
+    download.href =
+        downloadUrl;
+
+
+    download.setAttribute(
+        "download",
+        "compressed-" +
+        type +
+        ".jpg"
+    );
+
+
+    /* Dimensions */
+
+    const loadedImage =
+        new Image();
+
+
+    await new Promise(
+        function(resolve, reject) {
+
+
+            loadedImage.onload =
+                resolve;
+
+
+            loadedImage.onerror =
+                reject;
+
+
+            loadedImage.src =
+                url;
+
+        }
+    );
+
+
+    dimensions.textContent =
+        `${loadedImage.naturalWidth} × ${loadedImage.naturalHeight}`;
+
+
+    /* File size */
+
+    try {
+
+
+        const response =
+            await fetch(url);
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Could not download compressed image."
+            );
+
+        }
+
+
+        const blob =
+            await response.blob();
+
+
+        const compressedSize =
+            blob.size;
+
+
+        size.textContent =
+            formatBytes(
+                compressedSize
+            );
+
+
+        const saved =
+            (
+                (
+                    originalSize -
+                    compressedSize
+                )
+                /
+                originalSize
+            ) * 100;
+
+
+        if (saved > 0) {
+
+            compression.textContent =
+                `${saved.toFixed(1)}% smaller`;
+
+        }
+        else {
+
+            compression.textContent =
+                "File size increased";
+
+        }
+
+
+    }
+    catch(error) {
+
+
+        console.error(
+            "Size check error:",
+            error
+        );
+
+
+        size.textContent =
+            "Unable to calculate";
+
+
+        compression.textContent =
+            "Compressed";
+
+    }
+
+}
+
+
+/* =====================================================
+   PROGRESS
+===================================================== */
+
+function setProgress(
+    percent,
+    message
+) {
+
+
+    progressFill.style.width =
+        percent + "%";
+
+
+    progressPercent.textContent =
+        percent + "%";
+
+
+    progressText.textContent =
+        message;
+
+}
+
+
+/* =====================================================
+   STATUS
+===================================================== */
+
+function showStatus(
+    message,
+    type
+) {
+
+
+    status.textContent =
+        message;
+
+
+    status.className =
+        "status show " +
+        type;
+
+}
+
+
+/* =====================================================
+   FORMAT BYTES
+===================================================== */
+
+function formatBytes(bytes) {
+
+
+    if (bytes === 0) {
+
+        return "0 Bytes";
+
+    }
+
+
+    const units = [
+        "Bytes",
+        "KB",
+        "MB",
+        "GB"
+    ];
+
+
+    const index =
+        Math.floor(
+            Math.log(bytes) /
+            Math.log(1024)
+        );
+
+
+    return (
+        (
+            bytes /
+            Math.pow(
+                1024,
+                index
+            )
+        ).toFixed(2)
+        +
+        " " +
+        units[index]
+    );
+
+}
+
+
+/* =====================================================
+   SLEEP
+===================================================== */
+
+function sleep(milliseconds) {
+
+
+    return new Promise(
+        function(resolve) {
+
+            setTimeout(
+                resolve,
+                milliseconds
+            );
+
+        }
+    );
+
+}
+
+</script>
+
+</body>
+</html>
